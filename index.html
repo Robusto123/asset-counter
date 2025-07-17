@@ -45,19 +45,22 @@
   </div>
 
   <script>
-    const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQQIQ9y-07-4PuAK0I1U6Bc1QFzwZNWd-uy9eUwqoQF9V6LilFrrfCgYx3qAh8163T_cXSv6FW2Bm5c/gviz/tq?tqx=out:json&sheet=ทะเบียนทรัพย์สิน';
+    // ใช้ URL ที่ encode ชื่อ sheet แล้ว
+    const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQQIQ9y-07-4PuAK0I1U6Bc1QFzwZNWd-uy9eUwqoQF9V6LilFrrfCgYx3qAh8163T_cXSv6FW2Bm5c/gviz/tq?tqx=out:json&sheet=%E0%B8%97%E0%B8%B0%E0%B9%80%E0%B8%9A%E0%B8%B5%E0%B8%A2%E0%B8%99%E0%B8%97%E0%B8%A3%E0%B8%B1%E0%B8%9E%E0%B8%A2%E0%B9%8C%E0%B8%AA%E0%B8%B4%E0%B8%99';
 
     async function loadBranches() {
       try {
         const response = await fetch(sheetURL);
         const text = await response.text();
+
+        // ตัดส่วนหน้า-ท้ายให้เหลือแค่ JSON
         const json = JSON.parse(text.substring(47).slice(0, -2));
         const rows = json.table.rows;
 
         const branches = new Set();
 
         rows.forEach(row => {
-          const cell = row.c[2]; // คอลัมน์ C (index 2) คือ 'สาขา'
+          const cell = row.c[2]; // คอลัมน์ C = สาขา (index 2)
           if (cell && cell.v) {
             branches.add(cell.v);
           }
@@ -73,6 +76,7 @@
 
       } catch (err) {
         alert("ไม่สามารถโหลดข้อมูลได้: " + err);
+        console.error("รายละเอียด:", err);
       }
     }
 

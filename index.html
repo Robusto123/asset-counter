@@ -1,86 +1,72 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>เลือกสาขาเพื่อนับทรัพย์สิน</title>
+  <meta charset="UTF-8">
+  <title>Asset Counter</title>
   <style>
     body {
       font-family: sans-serif;
-      background: #f3f4f6;
+      background: #f3f3f3;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       height: 100vh;
     }
-    .box {
-      background: white;
-      padding: 40px;
-      border-radius: 16px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
+    .container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
     select, button {
-      margin-top: 16px;
-      width: 100%;
-      padding: 12px;
+      margin-top: 1rem;
+      padding: 0.5rem;
       font-size: 16px;
-    }
-    button {
-      background-color: #059669;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 6px;
-    }
-    button:hover {
-      background-color: #047857;
     }
   </style>
 </head>
 <body>
-  <div class="box">
+  <div class="container">
     <h2>เลือกสาขา</h2>
     <select id="branchSelect">
-      <option>-- เลือกสาขา --</option>
+      <option value="">-- เลือกสาขา --</option>
     </select>
-    <button onclick="goToAssetCount()">ไปที่รายการนับทรัพย์สิน</button>
+    <br>
+    <button onclick="goToCount()">ไปที่รายการนับทรัพย์สิน</button>
   </div>
 
   <script>
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQQIQ9y-07-4PuAK0I1U6Bc1QFzwZNWd-uy9eUwqoQF9V6LilFrrfCgYx3qAh8163T_cXSv6FW2Bm5c/pub?gid=0&single=true&output=tsv';
+    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQQIQ9y-07-4PuAK0I1U6Bc1QFzwZNWd-uy9eUwqoQF9V6LilFrrfCgYx3qAh8163T_cXSv6FW2Bm5c/gviz/tq?tqx=out:json&sheet=ทะเบียนทรัพย์สิน";
 
-    async function loadBranches() {
-      const response = await fetch(sheetUrl);
-      const text = await response.text();
-      const rows = text.trim().split('\n').slice(1); // ข้ามหัวตาราง
-      const branchSet = new Set();
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(data => {
+        const json = JSON.parse(data.substr(47).slice(0, -2));
+        const rows = json.table.rows;
+        const branches = new Set();
 
-      rows.forEach(row => {
-        const cols = row.split('\t');
-        if (cols[0]) branchSet.add(cols[0].trim());
+        rows.forEach(row => {
+          const branch = row.c[2]?.v; // คอลัมน์ C = index 2
+          if (branch) branches.add(branch);
+        });
+
+        const select = document.getElementById("branchSelect");
+        branches.forEach(branch => {
+          const opt = document.createElement("option");
+          opt.value = branch;
+          opt.textContent = branch;
+          select.appendChild(opt);
+        });
       });
 
-      const select = document.getElementById('branchSelect');
-      branchSet.forEach(branch => {
-        const option = document.createElement('option');
-        option.value = branch;
-        option.textContent = branch;
-        select.appendChild(option);
-      });
-    }
-
-    function goToAssetCount() {
-      const select = document.getElementById('branchSelect');
-      const branch = select.value;
-      if (branch && branch !== '-- เลือกสาขา --') {
-        window.location.href = `count.html?id=${encodeURIComponent(branch)}`;
+    function goToCount() {
+      const selected = document.getElementById("branchSelect").value;
+      if (!selected) {
+        alert("กรุณาเลือกสาขา");
+        return;
       }
+      window.location.href = "count.html?id=" + encodeURIComponent(selected);
     }
-
-    loadBranches();
   </script>
 </body>
 </html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>รายการทรัพย์สิน</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; background: #f9fafb; }
+    .container { max-width: 800px; margin: auto; background: white; padding: 2em; border-radius: 16px; }
+    h2 { color: #064e3b; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+    th { background-color: #10b981; color: white; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>รายการทรัพย์สินสาขา <span id="branchName"></span></h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ลำดับ</th>
+          <th>ชื่อทรัพย์สิน</th>
+          <th>รหัสทรัพย์สิน</th>
+        </tr>
+      </thead>
+      <tbody id="assetBody">
+        <tr><td colspan="3">กำลังโหลด...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const branch = urlParams.get('id');
+    document.getElementById('branchName').textContent = branch;
+
+    const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQQIQ9y-07-4PuAK0I1U6Bc1QFzwZNWd-uy9eUwqoQF9V6LilFrrfCgYx3qAh8163T_cXSv6FW2Bm5c/gviz/tq?sheet=รอบล้างแอร์';
+
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(data => {
+        const json = JSON.parse(data.substr(47).slice(0, -2));
+        const rows = json.table.rows;
+
+        const body = document.getElementById('assetBody');
+        body.innerHTML = '';
+        let count = 0;
+
+        rows.forEach(row => {
+          const rowBranch = row.c[0]?.v;
+          const assetName = row.c[2]?.v;
+          const assetCode = row.c[3]?.v;
+
+          if (rowBranch === branch && assetName && assetCode) {
+            count++;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${count}</td>
+              <td>${assetName}</td>
+              <td>${assetCode}</td>
+            `;
+            body.appendChild(tr);
+          }
+        });
+
+        if (count === 0) {
+          body.innerHTML = '<tr><td colspan="3">ไม่พบรายการทรัพย์สิน</td></tr>';
+        }
+      });
+  </script>
+</body>
+</html>

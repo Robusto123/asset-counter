@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>เลือกสาขา</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; background: #f3f4f6; }
+    .container { max-width: 400px; margin: auto; background: #fff; padding: 2em; border-radius: 12px; }
+    select, button { width: 100%; padding: 1em; margin-top: 1em; }
+    button { background: #10b981; color: white; border: none; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>เลือกสาขา</h2>
+    <select id="branchSelect">
+      <option value="">-- เลือกสาขา --</option>
+    </select>
+    <button onclick="goToCount()">ไปที่รายการนับทรัพย์สิน</button>
+  </div>
+
+  <script>
+    const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQQIQ9y-07-4PuAK0I1U6Bc1QFzwZNWd-uy9eUwqoQF9V6LilFrrfCgYx3qAh8163T_cXSv6FW2Bm5c/gviz/tq?sheet=รอบล้างแอร์';
+
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(data => {
+        const json = JSON.parse(data.substr(47).slice(0, -2));
+        const rows = json.table.rows;
+        const branches = new Set();
+        rows.forEach(row => {
+          const branch = row.c[0]?.v;
+          if (branch) branches.add(branch);
+        });
+
+        const select = document.getElementById('branchSelect');
+        branches.forEach(branch => {
+          const opt = document.createElement('option');
+          opt.value = branch;
+          opt.textContent = branch;
+          select.appendChild(opt);
+        });
+      });
+
+    function goToCount() {
+      const selected = document.getElementById('branchSelect').value;
+      if (!selected) {
+        alert('กรุณาเลือกสาขา');
+        return;
+      }
+      window.location.href = `count.html?id=${encodeURIComponent(selected)}`;
+    }
+  </script>
+</body>
+</html>
